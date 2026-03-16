@@ -1,13 +1,13 @@
-import type { CategoryProps } from '../interfaces/CategoryProps'
+﻿import type { CategoryProps } from '../interfaces/CategoryProps'
 
 export class Category implements CategoryProps {
-  constructor(public id: number, public name: string) {
-    if (!name.trim()) {
-      throw new Error('Category: o nome da categoria n�o pode ser vazio.')
+  constructor(public id: number, public title: string) {
+    if (!title.trim()) {
+      throw new Error('Category: o nome da categoria não pode ser vazio.')
     }
   }
 
   getDisplayName(): string {
-    return this.name.trim()
+    return this.title.trim()
   }
 }

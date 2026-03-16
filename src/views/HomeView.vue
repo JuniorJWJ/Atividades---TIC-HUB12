@@ -1,4 +1,4 @@
-<script lang="ts">
+﻿<script lang="ts">
 import { defineComponent } from 'vue'
 import { Cart } from '../model/cart.models'
 import { Category } from '../model/category.model'
@@ -17,17 +17,17 @@ export default defineComponent({
     ProductCard,
   },
   data() {
-    const cuidadosPessoais = new Category(1, 'Cuidados pessoais')
-    const casa = new Category(2, 'Casa')
-    const snacks = new Category(3, 'Snacks')
+    const suplemento = new Category(1, 'Suplementos')
+    const hardware = new Category(2, 'Hardware')
+    const roupa = new Category(3, 'Roupa')
 
     return {
       products: [
-        new Product(1, 'Kit banho relax', 89.9, cuidadosPessoais),
-        new Product(2, 'Vela aromática', 54.5, casa),
-        new Product(3, 'Café especial', 39.9, snacks),
-        new Product(4, 'Chá de hibisco', 18.7, snacks),
-        new Product(5, 'Sabonete artesanal', 22.4, cuidadosPessoais),
+        new Product(1, 'Whey black skull 100%', 69.9, suplemento),
+        new Product(2, 'RTX 3080', 4000, hardware),
+        new Product(3, 'Camiseta 100% algodão', 59.9, roupa),
+        new Product(4, 'Calça jeans', 99.9, roupa),
+        new Product(5, 'Maca Peruana', 20, suplemento),
       ] as Product[],
       cart: new Cart(),
     }
@@ -65,11 +65,11 @@ export default defineComponent({
     <header class="hero">
       <div class="hero__totals">
         <div class="hero__total">
-          <span class="hero__label">Total de itens</span>
+          <span class="hero__label">Total de itens : </span>
           <strong class="hero__value">{{ totalItems }}</strong>
         </div>
         <div class="hero__total">
-          <span class="hero__label">Preço final</span>
+          <span class="hero__label">Preço final : </span>
           <strong class="hero__value">{{ formatPrice(totalPrice) }}</strong>
         </div>
       </div>
