@@ -21,7 +21,7 @@ const router = createRouter({
           name: 'home',
           component: HomeView,
           meta: {
-            breadcrumb: [{ label: 'Home', to: { name: 'home' } }],
+            breadcrumb: [{ label: 'Início', to: { name: 'home' } }],
           },
         },
         {
@@ -30,7 +30,7 @@ const router = createRouter({
           component: ProductDetailsView,
           meta: {
             breadcrumb: [
-              { label: 'Home', to: { name: 'home' } },
+              { label: 'Início', to: { name: 'home' } },
               { label: 'Detalhes' },
             ],
           },
@@ -42,8 +42,8 @@ const router = createRouter({
           meta: {
             requiresAuth: true,
             breadcrumb: [
-              { label: 'Home', to: { name: 'home' } },
-              { label: 'Checkout' },
+              { label: 'Início', to: { name: 'home' } },
+              { label: 'Finalizar compra' },
             ],
           },
         },

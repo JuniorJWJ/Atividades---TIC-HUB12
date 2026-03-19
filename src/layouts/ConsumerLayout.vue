@@ -42,12 +42,12 @@ export default defineComponent({
     menuItems() {
       return [
         {
-          label: 'Home',
+          label: 'Início',
           icon: 'pi pi-home',
           command: () => this.$router.push({ name: 'home' }),
         },
         {
-          label: 'Checkout',
+          label: 'Finalizar compra',
           icon: 'pi pi-shopping-cart',
           command: () => this.goToCheckout(),
         },
@@ -132,7 +132,7 @@ export default defineComponent({
         <Menubar :model="menuItems" class="rounded-2xl border-0 bg-white/80 shadow-sm">
           <template #start>
             <!-- <div class="flex items-center gap-3 px-3 py-2">
-              <div class="text-xs uppercase tracking-[0.2em] text-slate-500">PrimeVue Shop</div>
+              <div class="text-xs uppercase tracking-[0.2em] text-slate-500">Loja PrimeVue</div>
             </div> -->
           </template>
           <template #end>
