@@ -1,9 +1,8 @@
-<script lang="ts">
-import { defineComponent } from 'vue'
-import { RouterView } from 'vue-router'
-import Menu from 'primevue/menu'
+﻿<script lang="ts" setup>
+import { RouterView, useRoute, useRouter } from 'vue-router'
+import PMenu from 'primevue/menu'
 import Breadcrumb from 'primevue/breadcrumb'
-import Button from 'primevue/button'
+import PButton from 'primevue/button'
 import { authState, logout } from '../state/auth.store'
 
 type BreadcrumbItem = {
@@ -11,45 +10,28 @@ type BreadcrumbItem = {
   to?: string | { name: string }
 }
 
-export default defineComponent({
-  name: 'AdminLayout',
-  components: {
-    RouterView,
-    Menu,
-    Breadcrumb,
-    Button,
+const route = useRoute()
+const router = useRouter()
+
+const menuItems = [
+  {
+    label: 'Produtos',
+    icon: 'pi pi-box',
+    command: () => router.push({ name: 'admin-products' }),
   },
-  data() {
-    return {
-      authState,
-    }
+  {
+    label: 'Relatórios',
+    icon: 'pi pi-chart-line',
+    command: () => router.push({ name: 'admin-reports' }),
   },
-  computed: {
-    menuItems() {
-      return [
-        {
-          label: 'Produtos',
-          icon: 'pi pi-box',
-          command: () => this.$router.push({ name: 'admin-products' }),
-        },
-        {
-          label: 'Relatórios',
-          icon: 'pi pi-chart-line',
-          command: () => this.$router.push({ name: 'admin-reports' }),
-        },
-      ]
-    },
-    breadcrumbItems(): BreadcrumbItem[] {
-      return (this.$route.meta.breadcrumb as BreadcrumbItem[] | undefined) ?? []
-    },
-  },
-  methods: {
-    logoutAdmin(): void {
-      logout()
-      this.$router.push({ name: 'home' })
-    },
-  },
-})
+]
+
+const breadcrumbItems = (route.meta.breadcrumb as BreadcrumbItem[] | undefined) ?? []
+
+function logoutAdmin(): void {
+  logout()
+  router.push({ name: 'home' })
+}
 </script>
 
 <template>
@@ -61,8 +43,8 @@ export default defineComponent({
           <h1 class="text-xl font-semibold">Painel de Gestão</h1>
           <p class="mt-1 text-xs text-slate-400">Usuário: {{ authState.role }}</p>
         </div>
-        <Menu :model="menuItems" class="border-0 bg-transparent text-slate-100" />
-        <Button
+        <PMenu :model="menuItems" class="border-0 bg-transparent text-slate-100" />
+        <PButton
           class="mt-6 w-full"
           severity="secondary"
           label="Sair"

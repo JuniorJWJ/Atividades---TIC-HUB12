@@ -1,9 +1,9 @@
-<script lang="ts">
+﻿<script lang="ts">
 import { defineComponent } from 'vue'
 import { RouterView } from 'vue-router'
 import Menubar from 'primevue/menubar'
 import Breadcrumb from 'primevue/breadcrumb'
-import Button from 'primevue/button'
+import PButton from 'primevue/button'
 import Card from 'primevue/card'
 import { cartState } from '../state/cart.store'
 import { authState, loginAsAdmin, loginAsCustomer, logout } from '../state/auth.store'
@@ -26,7 +26,7 @@ export default defineComponent({
   components: {
     Menubar,
     Breadcrumb,
-    Button,
+    PButton,
     Card,
     CartPanel,
     RouterView,
@@ -88,7 +88,7 @@ export default defineComponent({
   methods: {
     goToCheckout(): void {
       if (!this.authState.isAuthenticated) {
-        alert('Faça login para acessar o checkout.')
+        alert('FaÃ§a login para acessar o checkout.')
         return
       }
       this.$router.push({ name: 'checkout' })
@@ -151,14 +151,14 @@ export default defineComponent({
                   </div>
                 </template>
               </Card>
-              <Button
+              <PButton
                 size="small"
                 severity="secondary"
                 :label="authButtonLabel"
                 @click="authState.isAuthenticated ? logoutUser() : loginCustomer()"
               />
-              <Button size="small" severity="info" label="Admin" @click="loginAdminAndGo" />
-              <Button
+              <PButton size="small" severity="info" label="Admin" @click="loginAdminAndGo" />
+              <PButton
                 size="small"
                 :icon="isDark ? 'pi pi-sun' : 'pi pi-moon'"
                 :label="isDark ? 'Claro' : 'Escuro'"
@@ -189,3 +189,6 @@ export default defineComponent({
     </div>
   </div>
 </template>
+
+
+

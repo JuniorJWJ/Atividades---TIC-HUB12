@@ -1,4 +1,4 @@
-﻿import type { ProductProps } from '../interfaces/ProductProps'
+import type { ProductProps } from '../interfaces/ProductProps'
 import { Category } from './category.model'
 
 export class Product implements ProductProps {

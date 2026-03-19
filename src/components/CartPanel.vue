@@ -1,3 +1,79 @@
+﻿<script lang="ts" setup>
+import { computed } from '@vue/reactivity'
+import type { CartItem } from '../interfaces/CartItem'
+import { Cart } from '../model/cart.models'
+import Card from 'primevue/card'
+import PButton from 'primevue/button'
+import InputNumber from 'primevue/inputnumber'
+import ConfirmDialog from 'primevue/confirmdialog'
+import DataView from 'primevue/dataview'
+import { useConfirm } from 'primevue/useconfirm'
+
+const currencyFormatter = new Intl.NumberFormat('pt-BR', {
+  style: 'currency',
+  currency: 'BRL',
+})
+
+const props = defineProps<{ cart: Cart }>()
+const confirm = useConfirm()
+
+const cartItems = computed(() => props.cart.getItems())
+const totalItems = computed(() => props.cart.getTotalItems())
+
+function removeOne(item: CartItem): void {
+  props.cart.removeOne(item.product)
+}
+
+function removeAll(item: CartItem): void {
+  props.cart.removeAll(item.product)
+}
+
+function updateQuantity(item: CartItem, value: number | null): void {
+  if (value === null || Number.isNaN(value)) {
+    return
+  }
+
+  const nextQuantity = Math.max(0, Math.floor(value))
+  const currentQuantity = item.quantity
+
+  if (nextQuantity === currentQuantity) {
+    return
+  }
+
+  if (nextQuantity === 0) {
+    props.cart.removeAll(item.product)
+    return
+  }
+
+  if (nextQuantity > currentQuantity) {
+    props.cart.addItem(item.product, nextQuantity - currentQuantity)
+    return
+  }
+
+  const toRemove = currentQuantity - nextQuantity
+  for (let index = 0; index < toRemove; index += 1) {
+    props.cart.removeOne(item.product)
+  }
+}
+
+function confirmRemoveAll(item: CartItem): void {
+  confirm.require({
+    header: 'Remover itens',
+    message: `Deseja remover todas as unidades de ${item.product.name}?`,
+    icon: 'pi pi-exclamation-triangle',
+    acceptLabel: 'Remover',
+    rejectLabel: 'Cancelar',
+    accept: () => {
+      removeAll(item)
+    },
+  })
+}
+
+function formatPrice(value: number): string {
+  return currencyFormatter.format(value)
+}
+</script>
+
 <template>
   <section class="space-y-4">
     <div class="flex items-center justify-between">
@@ -23,7 +99,16 @@
       </template>
     </Card>
 
-    <DataView v-else :value="cartItems" layout="list" class="max-h-[520px] overflow-y-scroll pr-2">
+    <DataView
+      v-else
+      :value="cartItems"
+      layout="list"
+      class="max-h-[520px] overflow-y-scroll pr-2 bg-transparent"
+      :pt="{
+        root: { class: 'bg-transparent border-0' },
+        content: { class: 'bg-transparent p-0' },
+      }"
+    >
       <template #list="{ items }">
         <div class="flex flex-col gap-4">
           <Card
@@ -53,8 +138,8 @@
                     @update:modelValue="updateQuantity(item, $event)"
                   />
                   <div class="flex items-center gap-2">
-                    <Button icon="pi pi-minus" severity="secondary" text @click="removeOne(item)" />
-                    <Button
+                    <PButton icon="pi pi-minus" severity="secondary" text @click="removeOne(item)" />
+                    <PButton
                       icon="pi pi-trash"
                       severity="danger"
                       text
@@ -70,94 +155,3 @@
     </DataView>
   </section>
 </template>
-
-<script lang="ts">
-import { defineComponent, type PropType } from 'vue'
-import type { CartItem } from '../interfaces/CartItem'
-import { Cart } from '../model/cart.models'
-import Card from 'primevue/card'
-import Button from 'primevue/button'
-import InputNumber from 'primevue/inputnumber'
-import ConfirmDialog from 'primevue/confirmdialog'
-import DataView from 'primevue/dataview'
-
-const currencyFormatter = new Intl.NumberFormat('pt-BR', {
-  style: 'currency',
-  currency: 'BRL',
-})
-
-export default defineComponent({
-  name: 'CartPanel',
-  components: {
-    Card,
-    Button,
-    InputNumber,
-    ConfirmDialog,
-    DataView,
-  },
-  props: {
-    cart: {
-      type: Object as PropType<Cart>,
-      required: true,
-    },
-  },
-  computed: {
-    cartItems(): CartItem[] {
-      return this.cart.getItems()
-    },
-    totalItems(): number {
-      return this.cart.getTotalItems()
-    },
-  },
-  methods: {
-    removeOne(item: CartItem): void {
-      this.cart.removeOne(item.product)
-    },
-    removeAll(item: CartItem): void {
-      this.cart.removeAll(item.product)
-    },
-    updateQuantity(item: CartItem, value: number | null): void {
-      if (value === null || Number.isNaN(value)) {
-        return
-      }
-
-      const nextQuantity = Math.max(0, Math.floor(value))
-      const currentQuantity = item.quantity
-
-      if (nextQuantity === currentQuantity) {
-        return
-      }
-
-      if (nextQuantity === 0) {
-        this.cart.removeAll(item.product)
-        return
-      }
-
-      if (nextQuantity > currentQuantity) {
-        this.cart.addItem(item.product, nextQuantity - currentQuantity)
-        return
-      }
-
-      const toRemove = currentQuantity - nextQuantity
-      for (let index = 0; index < toRemove; index += 1) {
-        this.cart.removeOne(item.product)
-      }
-    },
-    confirmRemoveAll(item: CartItem): void {
-      this.$confirm.require({
-        header: 'Remover itens',
-        message: `Deseja remover todas as unidades de ${item.product.name}?`,
-        icon: 'pi pi-exclamation-triangle',
-        acceptLabel: 'Remover',
-        rejectLabel: 'Cancelar',
-        accept: () => {
-          this.removeAll(item)
-        },
-      })
-    },
-    formatPrice(value: number): string {
-      return currencyFormatter.format(value)
-    },
-  },
-})
-</script>

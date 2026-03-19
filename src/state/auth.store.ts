@@ -1,4 +1,4 @@
-import { reactive } from 'vue'
+﻿import { reactive } from '@vue/reactivity'
 import { Role } from '../enums/Role'
 
 export const authState = reactive({

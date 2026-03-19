@@ -1,13 +1,5 @@
-<script lang="ts">
-import { defineComponent } from 'vue'
+﻿<script lang="ts" setup>
 import Card from 'primevue/card'
-
-export default defineComponent({
-  name: 'AdminReportsView',
-  components: {
-    Card,
-  },
-})
 </script>
 
 <template>

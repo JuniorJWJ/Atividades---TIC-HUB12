@@ -1,4 +1,27 @@
-﻿<template>
+﻿<script lang="ts" setup>
+import { RouterLink } from 'vue-router'
+import Card from 'primevue/card'
+import PButton from 'primevue/button'
+import { Product } from '../model/product.model'
+
+const props = defineProps<{ product: Product }>()
+const emit = defineEmits<{ add: [Product] }>()
+
+const currencyFormatter = new Intl.NumberFormat('pt-BR', {
+  style: 'currency',
+  currency: 'BRL',
+})
+
+function handleAdd(): void {
+  emit('add', props.product)
+}
+
+function formatPrice(value: number): string {
+  return currencyFormatter.format(value)
+}
+</script>
+
+<template>
   <Card
     class="h-full rounded-2xl border border-slate-200/70 bg-white/95 shadow-sm dark:border-slate-800 dark:bg-slate-900/80"
   >
@@ -8,7 +31,6 @@
           <h3 class="text-base font-semibold leading-snug text-slate-900 dark:text-slate-100">
             {{ product.name }}
           </h3>
-          <!-- <p class="text-xs uppercase tracking-[0.2em] text-slate-400">Categoria</p> -->
           <p class="text-sm text-slate-500 dark:text-slate-400">
             {{ product.category.getDisplayName() }}
           </p>
@@ -23,7 +45,7 @@
           <span class="text-[11px] uppercase tracking-[0.2em] text-slate-400">Unidade</span>
         </div>
 
-        <Button
+        <PButton
           label="Adicionar"
           class="w-full"
           :pt="{
@@ -42,40 +64,3 @@
     </template>
   </Card>
 </template>
-
-<script lang="ts">
-import { defineComponent, type PropType } from 'vue'
-import { RouterLink } from 'vue-router'
-import Card from 'primevue/card'
-import Button from 'primevue/button'
-import { Product } from '../model/product.model'
-
-const currencyFormatter = new Intl.NumberFormat('pt-BR', {
-  style: 'currency',
-  currency: 'BRL',
-})
-
-export default defineComponent({
-  name: 'ProductCard',
-  components: {
-    Card,
-    Button,
-    RouterLink,
-  },
-  props: {
-    product: {
-      type: Object as PropType<Product>,
-      required: true,
-    },
-  },
-  emits: ['add'],
-  methods: {
-    handleAdd(): void {
-      this.$emit('add', this.product)
-    },
-    formatPrice(value: number): string {
-      return currencyFormatter.format(value)
-    },
-  },
-})
-</script>

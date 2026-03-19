@@ -1,7 +1,6 @@
-<script lang="ts">
-import { defineComponent } from 'vue'
+﻿<script lang="ts" setup>
 import Card from 'primevue/card'
-import Button from 'primevue/button'
+import PButton from 'primevue/button'
 import { cartState } from '../state/cart.store'
 
 const currencyFormatter = new Intl.NumberFormat('pt-BR', {
@@ -9,31 +8,12 @@ const currencyFormatter = new Intl.NumberFormat('pt-BR', {
   currency: 'BRL',
 })
 
-export default defineComponent({
-  name: 'CheckoutView',
-  components: {
-    Card,
-    Button,
-  },
-  data() {
-    return {
-      cartState,
-    }
-  },
-  computed: {
-    totalItems(): number {
-      return this.cartState.cart.getTotalItems()
-    },
-    totalPrice(): number {
-      return this.cartState.cart.getFinalPrice()
-    },
-  },
-  methods: {
-    formatPrice(value: number): string {
-      return currencyFormatter.format(value)
-    },
-  },
-})
+const totalItems = cartState.cart.getTotalItems()
+const totalPrice = cartState.cart.getFinalPrice()
+
+function formatPrice(value: number): string {
+  return currencyFormatter.format(value)
+}
 </script>
 
 <template>
@@ -52,7 +32,7 @@ export default defineComponent({
             <p class="text-2xl font-semibold">{{ formatPrice(totalPrice) }}</p>
           </div>
         </div>
-        <Button class="mt-6" label="Confirmar pedido" icon="pi pi-check" />
+        <PButton class="mt-6" label="Confirmar pedido" icon="pi pi-check" />
       </template>
     </Card>
   </div>
