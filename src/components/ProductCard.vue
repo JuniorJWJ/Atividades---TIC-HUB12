@@ -1,22 +1,46 @@
-<template>
-  <article class="product-card">
-    <header class="product-card__header">
-      <h3 class="product-card__title">{{ product.name }}</h3>
-      <p class="product-card__category">
-        {{ product.category.getDisplayName() }}
-      </p>
-    </header>
-    <div class="product-card__footer">
-      <span class="product-card__price">
-        {{ formatPrice(product.price) }}
-      </span>
-      <button class="product-card__button" type="button" @click="handleAdd">Adicionar</button>
-    </div>
-  </article>
+﻿<template>
+  <Card
+    class="h-full rounded-2xl border border-slate-200/70 bg-white/95 shadow-sm dark:border-slate-800 dark:bg-slate-900/80"
+  >
+    <template #content>
+      <div class="flex h-full min-h-[260px] flex-col gap-4">
+        <div class="flex flex-col gap-2">
+          <h3 class="text-base font-semibold leading-snug text-slate-900 dark:text-slate-100">
+            {{ product.name }}
+          </h3>
+          <!-- <p class="text-xs uppercase tracking-[0.2em] text-slate-400">Categoria</p> -->
+          <p class="text-sm text-slate-500 dark:text-slate-400">
+            {{ product.category.getDisplayName() }}
+          </p>
+        </div>
+
+        <div class="mt-auto flex flex-col">
+          <span
+            class="w-full break-words text-lg font-bold leading-tight text-slate-900 dark:text-slate-100"
+          >
+            {{ formatPrice(product.price) }}
+          </span>
+          <span class="text-[11px] uppercase tracking-[0.2em] text-slate-400">Unidade</span>
+        </div>
+
+        <Button
+          label="Adicionar"
+          class="w-full"
+          :pt="{
+            root: { class: 'justify-center' },
+            label: { class: 'whitespace-nowrap text-sm font-semibold' },
+          }"
+          @click="handleAdd"
+        />
+      </div>
+    </template>
+  </Card>
 </template>
 
 <script lang="ts">
 import { defineComponent, type PropType } from 'vue'
+import Card from 'primevue/card'
+import Button from 'primevue/button'
 import { Product } from '../model/product.model'
 
 const currencyFormatter = new Intl.NumberFormat('pt-BR', {
@@ -26,6 +50,10 @@ const currencyFormatter = new Intl.NumberFormat('pt-BR', {
 
 export default defineComponent({
   name: 'ProductCard',
+  components: {
+    Card,
+    Button,
+  },
   props: {
     product: {
       type: Object as PropType<Product>,
