@@ -8,6 +8,7 @@ import ProductCard from '../components/ProductCard.vue'
 import Card from 'primevue/card'
 import Button from 'primevue/button'
 import InputNumber from 'primevue/inputnumber'
+import DataView from 'primevue/dataview'
 import ConfirmDialog from 'primevue/confirmdialog'
 
 const currencyFormatter = new Intl.NumberFormat('pt-BR', {
@@ -22,6 +23,7 @@ export default defineComponent({
     Card,
     Button,
     InputNumber,
+    DataView,
     ConfirmDialog,
   },
   data() {
@@ -196,53 +198,62 @@ export default defineComponent({
               </template>
             </Card>
 
-            <div v-else class="flex max-h-[520px] flex-col gap-4 overflow-y-scroll pr-2">
-              <Card
-                v-for="item in cartItems"
-                :key="item.product.id"
-                class="rounded-2xl border border-slate-200/70 bg-white/95 p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900/80"
-              >
-                <template #content>
-                  <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-                    <div>
-                      <p class="text-base font-semibold">{{ item.product.name }}</p>
-                      <p class="text-sm text-slate-500 dark:text-slate-400">
-                        {{ item.quantity }}x ·
-                        {{ formatPrice(item.product.price * item.quantity) }}
-                      </p>
-                    </div>
-                    <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
-                      <InputNumber
-                        :modelValue="item.quantity"
-                        class="w-full sm:w-36"
-                        inputClass="w-full text-center"
-                        showButtons
-                        buttonLayout="horizontal"
-                        decrementButtonIcon="pi pi-minus"
-                        incrementButtonIcon="pi pi-plus"
-                        :min="0"
-                        :step="1"
-                        @update:modelValue="updateQuantity(item, $event)"
-                      />
-                      <div class="flex items-center gap-2">
-                        <Button
-                          icon="pi pi-minus"
-                          severity="secondary"
-                          text
-                          @click="removeOne(item)"
-                        />
-                        <Button
-                          icon="pi pi-trash"
-                          severity="danger"
-                          text
-                          @click="confirmRemoveAll(item)"
-                        />
+            <DataView
+              v-else
+              :value="cartItems"
+              layout="list"
+              class="max-h-[520px] overflow-y-scroll pr-2"
+            >
+              <template #list="{ items }">
+                <div class="flex flex-col gap-4">
+                  <Card
+                    v-for="item in items"
+                    :key="item.product.id"
+                    class="rounded-2xl border border-slate-200/70 bg-white/95 p-4 shadow-sm dark:border-slate-800 dark:bg-slate-900/80"
+                  >
+                    <template #content>
+                      <div class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                        <div>
+                          <p class="text-base font-semibold">{{ item.product.name }}</p>
+                          <p class="text-sm text-slate-500 dark:text-slate-400">
+                            {{ item.quantity }}x ·
+                            {{ formatPrice(item.product.price * item.quantity) }}
+                          </p>
+                        </div>
+                        <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
+                          <InputNumber
+                            :modelValue="item.quantity"
+                            class="w-full sm:w-36"
+                            inputClass="w-full text-center"
+                            showButtons
+                            buttonLayout="horizontal"
+                            decrementButtonIcon="pi pi-minus"
+                            incrementButtonIcon="pi pi-plus"
+                            :min="0"
+                            :step="1"
+                            @update:modelValue="updateQuantity(item, $event)"
+                          />
+                          <div class="flex items-center gap-2">
+                            <Button
+                              icon="pi pi-minus"
+                              severity="secondary"
+                              text
+                              @click="removeOne(item)"
+                            />
+                            <Button
+                              icon="pi pi-trash"
+                              severity="danger"
+                              text
+                              @click="confirmRemoveAll(item)"
+                            />
+                          </div>
+                        </div>
                       </div>
-                    </div>
-                  </div>
-                </template>
-              </Card>
-            </div>
+                    </template>
+                  </Card>
+                </div>
+              </template>
+            </DataView>
           </section>
         </main>
       </div>
