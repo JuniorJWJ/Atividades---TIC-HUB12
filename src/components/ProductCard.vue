@@ -32,6 +32,12 @@
           }"
           @click="handleAdd"
         />
+        <RouterLink
+          class="text-center text-xs uppercase tracking-[0.2em] text-slate-400 hover:text-slate-600"
+          :to="{ name: 'product-details', params: { id: product.id } }"
+        >
+          Ver detalhes
+        </RouterLink>
       </div>
     </template>
   </Card>
@@ -39,6 +45,7 @@
 
 <script lang="ts">
 import { defineComponent, type PropType } from 'vue'
+import { RouterLink } from 'vue-router'
 import Card from 'primevue/card'
 import Button from 'primevue/button'
 import { Product } from '../model/product.model'
@@ -53,6 +60,7 @@ export default defineComponent({
   components: {
     Card,
     Button,
+    RouterLink,
   },
   props: {
     product: {
