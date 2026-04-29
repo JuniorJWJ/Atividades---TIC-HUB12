@@ -1,8 +1,9 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { Role } from '../enums/Role'
-import { authState } from '../state/auth.store'
+import { useAuthStore } from '../state/auth.store'
 import ConsumerLayout from '../layouts/ConsumerLayout.vue'
 import AdminLayout from '../layouts/AdminLayout.vue'
+import AuthView from '../views/AuthView.vue'
 import HomeView from '../views/HomeView.vue'
 import ProductDetailsView from '../views/ProductDetailsView.vue'
 import CheckoutView from '../views/CheckoutView.vue'
@@ -12,6 +13,11 @@ import AdminReportsView from '../views/admin/AdminReportsView.vue'
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
+    {
+      path: '/login',
+      name: 'login',
+      component: AuthView,
+    },
     {
       path: '/',
       component: ConsumerLayout,
@@ -88,15 +94,20 @@ const router = createRouter({
 })
 
 router.beforeEach((to) => {
+  const authStore = useAuthStore()
   const requiresAuth = to.matched.some((record) => record.meta.requiresAuth)
   const requiresAdmin = to.matched.some((record) => record.meta.requiresRole === Role.ADMIN)
 
-  if (requiresAuth && !authState.isAuthenticated) {
+  if (to.name === 'login' && authStore.isAuthenticated) {
     return { name: 'home' }
   }
 
-  if (requiresAdmin && authState.role !== Role.ADMIN) {
-    return { name: 'home' }
+  if (requiresAuth && !authStore.isAuthenticated) {
+    return { name: 'login', query: { redirect: to.fullPath } }
+  }
+
+  if (requiresAdmin && authStore.role !== Role.ADMIN) {
+    return authStore.isAuthenticated ? { name: 'home' } : { name: 'login', query: { redirect: to.fullPath } }
   }
 })
 

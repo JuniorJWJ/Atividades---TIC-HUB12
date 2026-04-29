@@ -3,7 +3,7 @@ import { RouterView, useRoute, useRouter } from 'vue-router'
 import PMenu from 'primevue/menu'
 import Breadcrumb from 'primevue/breadcrumb'
 import PButton from 'primevue/button'
-import { authState, logout } from '../state/auth.store'
+import { useAuthStore } from '../state/auth.store'
 
 type BreadcrumbItem = {
   label: string
@@ -12,6 +12,7 @@ type BreadcrumbItem = {
 
 const route = useRoute()
 const router = useRouter()
+const authStore = useAuthStore()
 
 const menuItems = [
   {
@@ -29,8 +30,8 @@ const menuItems = [
 const breadcrumbItems = (route.meta.breadcrumb as BreadcrumbItem[] | undefined) ?? []
 
 function logoutAdmin(): void {
-  logout()
-  router.push({ name: 'home' })
+  authStore.logout()
+  router.push({ name: 'login' })
 }
 </script>
 
@@ -41,7 +42,7 @@ function logoutAdmin(): void {
         <div class="mb-6">
           <p class="text-xs uppercase tracking-[0.2em] text-slate-400">Admin</p>
           <h1 class="text-xl font-semibold">Painel de Gestão</h1>
-          <p class="mt-1 text-xs text-slate-400">Usuário: {{ authState.role }}</p>
+          <p class="mt-1 text-xs text-slate-400">Usuário: {{ authStore.user?.name }}</p>
         </div>
         <PMenu :model="menuItems" class="border-0 bg-transparent text-slate-100" />
         <PButton
