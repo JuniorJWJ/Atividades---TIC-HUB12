@@ -1,5 +1,6 @@
 import express from 'express'
 import { logger } from './middlewares/logger.js'
+import { categoryRouter } from './routes/category.routes.js'
 import { ordersRouter } from './routes/orders.routes.js'
 import { productsRouter } from './routes/products.routes.js'
 
@@ -12,5 +13,6 @@ app.get('/health', (_req, res) => {
   res.status(200).json({ status: 'ok' })
 })
 
+app.use('/category', categoryRouter)
 app.use('/products', productsRouter)
 app.use('/orders', ordersRouter)

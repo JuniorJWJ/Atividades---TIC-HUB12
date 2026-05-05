@@ -1,58 +1,23 @@
-import { Router, type Request, type Response } from 'express'
-import { products } from '../data/products.js'
-import type { Product } from '../types/product.js'
-
-type ErrorResponse = {
-  message: string
-}
-
-type ProductParams = {
-  id: string
-}
-
-type ProductQuery = {
-  category?: string
-}
+import { Router } from 'express'
+import {
+  createProduct,
+  deleteProduct,
+  getProductById,
+  listProducts,
+} from '../controllers/product.controller.js'
+import { validateData } from '../middlewares/validateData.js'
+import {
+  createProductSchema,
+  productParamsSchema,
+  productQuerySchema,
+} from '../schemas/product.schema.js'
 
 export const productsRouter = Router()
 
-productsRouter.get(
-  '/',
-  (req: Request<unknown, Product[], unknown, ProductQuery>, res: Response<Product[]>): void => {
-    const category = req.query.category?.toLowerCase()
+productsRouter.get('/', validateData(productQuerySchema, 'query'), listProducts)
 
-    if (!category) {
-      res.status(200).json(products)
-      return
-    }
+productsRouter.get('/:id', validateData(productParamsSchema, 'params'), getProductById)
 
-    const filteredProducts = products.filter((product) => product.category.toLowerCase() === category)
-    res.status(200).json(filteredProducts)
-  },
-)
+productsRouter.post('/', validateData(createProductSchema, 'body'), createProduct)
 
-productsRouter.get(
-  '/:id',
-  (req: Request<ProductParams, Product | ErrorResponse>, res: Response<Product | ErrorResponse>): void => {
-    const id = Number(req.params.id)
-
-    if (Number.isNaN(id)) {
-      res.status(400).json({ message: 'O ID do produto deve ser numérico.' })
-      return
-    }
-
-    if (id < 0) {
-      res.status(400).json({ message: 'O ID do produto não pode ser negativo.' })
-      return
-    }
-
-    const product = products.find((item) => item.id === id)
-
-    if (!product) {
-      res.status(404).json({ message: 'Produto não encontrado.' })
-      return
-    }
-
-    res.status(200).json(product)
-  },
-)
+productsRouter.delete('/:id', validateData(productParamsSchema, 'params'), deleteProduct)
