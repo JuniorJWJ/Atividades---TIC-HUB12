@@ -1,58 +1,87 @@
-import type { Request, Response } from 'express'
-import { products } from '../data/products.js'
-import type {
-  CreateProductBody,
-  ProductParams,
-  ProductQuery,
+import type { NextFunction, Request, Response } from 'express'
+import {
+  CreateProductDto,
+  ProductListDto,
+  ProductResponseDto,
+  UpdateProductDto,
+} from '../dtos/product.dto.js'
+import { AppError } from '../errors/AppError.js'
+import {
+  createProductSchema,
+  productParamsSchema,
+  productQuerySchema,
+  updateProductSchema,
 } from '../schemas/product.schema.js'
-import type { Product } from '../types/product.js'
+import type { ProductService } from '../services/ProductService.js'
 
-type ErrorResponse = {
-  message: string
-}
+export class ProductController {
+  constructor(private readonly productService: ProductService) {}
 
-export function listProducts(_req: Request, res: Response<Product[]>): void {
-  const { category } = res.locals.query as ProductQuery
+  getAll = (req: Request, res: Response, next: NextFunction): void => {
+    try {
+      const query = this.parse(productQuerySchema, req.query)
+      const products = this.productService.getAll(query.page, query.size, query.category)
 
-  if (!category) {
-    res.status(200).json(products)
-    return
+      res.status(200).json(ProductListDto.create(products, query.page, query.size))
+    } catch (error) {
+      next(error)
+    }
   }
 
-  const filteredProducts = products.filter((product) => product.categoryId === category)
-  res.status(200).json(filteredProducts)
-}
+  getById = (req: Request, res: Response, next: NextFunction): void => {
+    try {
+      const { id } = this.parse(productParamsSchema, req.params)
+      const product = this.productService.getById(id)
 
-export function getProductById(_req: Request, res: Response<Product | ErrorResponse>): void {
-  const { id } = res.locals.params as ProductParams
-  const product = products.find((item) => item.id === id)
-
-  if (!product) {
-    res.status(404).json({ message: 'Produto não encontrado.' })
-    return
+      res.status(200).json(ProductResponseDto.create(product))
+    } catch (error) {
+      next(error)
+    }
   }
 
-  res.status(200).json(product)
-}
+  create = (req: Request, res: Response, next: NextFunction): void => {
+    try {
+      const body = this.parse(createProductSchema, req.body)
+      const dto = CreateProductDto.create(body)
+      const product = this.productService.create(dto)
 
-export function createProduct(_req: Request, res: Response<Product>): void {
-  const body = res.locals.body as CreateProductBody
-  const product: Product = {
-    id: crypto.randomUUID(),
-    ...body,
+      res.status(201).json(ProductResponseDto.create(product))
+    } catch (error) {
+      next(error)
+    }
   }
 
-  products.push(product)
-  res.status(201).json(product)
-}
+  update = (req: Request, res: Response, next: NextFunction): void => {
+    try {
+      const { id } = this.parse(productParamsSchema, req.params)
+      const body = this.parse(updateProductSchema, req.body)
+      const dto = UpdateProductDto.create(body)
+      const product = this.productService.update(id, dto)
 
-export function deleteProduct(_req: Request, res: Response): void {
-  const { id } = res.locals.params as ProductParams
-  const productIndex = products.findIndex((product) => product.id === id)
-
-  if (productIndex >= 0) {
-    products.splice(productIndex, 1)
+      res.status(200).json(ProductResponseDto.create(product))
+    } catch (error) {
+      next(error)
+    }
   }
 
-  res.status(204).send()
+  delete = (req: Request, res: Response, next: NextFunction): void => {
+    try {
+      const { id } = this.parse(productParamsSchema, req.params)
+
+      this.productService.delete(id)
+      res.status(204).send()
+    } catch (error) {
+      next(error)
+    }
+  }
+
+  private parse<T>(schema: { safeParse: (data: unknown) => { success: true; data: T } | { success: false; error: { issues: { message: string }[] } } }, data: unknown): T {
+    const result = schema.safeParse(data)
+
+    if (!result.success) {
+      throw new AppError(result.error.issues.map((issue) => issue.message).join(' | '), 400)
+    }
+
+    return result.data
+  }
 }

@@ -1,10 +1,8 @@
 import { z } from 'zod'
 
 const paginationNumberSchema = z.coerce
-  .number({
-    error: 'O valor deve ser numérico.',
-  })
-  .int('O valor deve ser um número inteiro.')
+  .number({ error: 'O valor deve ser numerico.' })
+  .int('O valor deve ser um numero inteiro.')
   .positive('O valor deve ser maior que zero.')
 
 export const categoryQueryPaginationSchema = z.object({
@@ -13,18 +11,16 @@ export const categoryQueryPaginationSchema = z.object({
 })
 
 export const categoryParamsSchema = z.object({
-  id: z.uuid('O ID da categoria deve ser um UUID válido.'),
+  id: z.uuid('O ID da categoria deve ser um UUID valido.'),
 })
 
 export const createCategorySchema = z.object({
   name: z.string().min(3, 'O nome da categoria deve ter pelo menos 3 caracteres.'),
-  description: z.string().optional(),
 })
 
-export const updateCategorySchema = createCategorySchema.partial().refine(
-  (data) => Object.keys(data).length > 0,
-  'Informe pelo menos um campo para atualizar.',
-)
+export const updateCategorySchema = z.object({
+  name: z.string().min(3, 'O nome da categoria deve ter pelo menos 3 caracteres.'),
+})
 
 export type CategoryQueryPagination = z.infer<typeof categoryQueryPaginationSchema>
 export type CategoryParams = z.infer<typeof categoryParamsSchema>

@@ -1,23 +1,17 @@
 import { Router } from 'express'
-import {
-  createProduct,
-  deleteProduct,
-  getProductById,
-  listProducts,
-} from '../controllers/product.controller.js'
-import { validateData } from '../middlewares/validateData.js'
-import {
-  createProductSchema,
-  productParamsSchema,
-  productQuerySchema,
-} from '../schemas/product.schema.js'
+import type { ProductController } from '../controllers/product.controller.js'
+import { authMiddleware } from '../middlewares/authMiddleware.js'
+import { authorize } from '../middlewares/authorize.js'
 
-export const productsRouter = Router()
+export function createProductsRouter(productController: ProductController): Router {
+  const router = Router()
+  const adminOnly = [authMiddleware, authorize('admin')]
 
-productsRouter.get('/', validateData(productQuerySchema, 'query'), listProducts)
+  router.get('/', productController.getAll)
+  router.get('/:id', productController.getById)
+  router.post('/', adminOnly, productController.create)
+  router.put('/:id', adminOnly, productController.update)
+  router.delete('/:id', adminOnly, productController.delete)
 
-productsRouter.get('/:id', validateData(productParamsSchema, 'params'), getProductById)
-
-productsRouter.post('/', validateData(createProductSchema, 'body'), createProduct)
-
-productsRouter.delete('/:id', validateData(productParamsSchema, 'params'), deleteProduct)
+  return router
+}

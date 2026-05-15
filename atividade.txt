@@ -1,0 +1,143 @@
+🟢 Bloco 1
+
+1. Matrículas (1FN)
+
+A) Violação: atributos multivalorados
+B) Atômico = valor indivisível na célula; as colunas tem listas
+C) 
+matricula_id	aluno_nome	    disciplina	    professor
+1	            Ana Lima	    Cálculo	        Prof. João
+1	            Ana Lima	    Física	        Prof. Marta
+1	            Ana Lima	    Programação	    Prof. Carlos
+2	            Pedro Souza	    Cálculo	        Prof. João
+2	            Pedro Souza	    Química	        Prof. Sara
+
+Ana terá 3 linhas, pois tem 3 disciplinas
+
+2. Vendas (3FN)
+
+A) Dependência transitiva: 
+venda_id → vendedor_id → vendedor_nome
+venda_id → vendedor_id → departamento → gerente_depto
+
+B) Se o gerente muda, é necessário atualizar todas as vendas antigas aí pode dar risco de inconsistência.
+
+C) Tabelas finais: 
+|-------------------|        N:1        |----------------------|        N:1        |--------------------------|
+|      Vendas       |------------------>|     Vendedores       |------------------>|      Departamentos       |
+|-------------------|                   |----------------------|                   |--------------------------|
+| venda_id (PK)     |                   | vendedor_id (PK)     |                   | depto_id (PK)            |
+| vendedor_id (FK)  |                   | vendedor_nome        |                   | departamento_nome        |
+| valor_venda       |                   | depto_id (FK)        |                   | gerente_depto            |
+| data_venda        |   
+
+🟡 Bloco 2
+
+3. Restaurante (1FN → 2FN → 3FN)
+
+|----------------------|        N:1        |----------------------|        N:1        |----------------------|
+|     Itens_Pedido     |------------------>|       Pedidos        |------------------>|       Garçons        |
+|----------------------|                   |----------------------|                   |----------------------|
+| pedido_id (FK)       |                   | pedido_id (PK)       |                   | garcom_id (PK)       |
+| item_nome            |                   | mesa_id (FK)         |                   | garcom_nome          |
+| quantidade           |                   | garcom_id (FK)       |                   | turno                |
+| preco_unit           |                   |----------------------|                   |----------------------|
+|----------------------|
+                                                   |
+                                                   | N:1
+                                                   v
+                                         |----------------------|
+                                         |        Mesas         |
+                                         |----------------------|
+                                         | mesa_id (PK)         |
+                                         |----------------------|
+-
+Eu não armazenaria o campo total no banco.
+A melhor abordagem é calcular o valor diretamente na consulta, por exemplo:
+
+SELECT SUM(quantidade * preco_unit)
+FROM Itens_Pedido
+WHERE pedido_id = ?;
+
+O motivo principal é evitar inconsistência de dados. O total é uma informação derivada dos itens do pedido, então, se ele ficar salvo em uma coluna separada, qualquer alteração na quantidade ou no preço de um item pode deixar o valor desatualizado caso o campo total não seja recalculado corretamente.
+
+Além disso, manter apenas os dados essenciais no banco reduz redundância e segue um princípio importante de modelagem: o banco deve armazenar a fonte da verdade, enquanto valores derivados podem ser obtidos via query ou pela camada de aplicação.
+
+Na prática, calcular o total em tempo real garante mais confiabilidade e evita problemas de manutenção futuramente.
+🔴 Bloco 3
+
+4. Biblioteca (2FN)
+
+A) titulo_livro depende só de livro_id; usuario_email depende só de usuario_id.
+
+B) Não é possível cadastrar livro novo sem um empréstimo, pois falta usuario_id na PK.
+
+C) Schema: 
+|----------------------|        1:N        |----------------------|        N:1        |----------------------|
+|        Livros        |------------------>|     Emprestimos      |------------------>|       Usuarios       |
+|----------------------|                   |----------------------|                   |----------------------|
+| livro_id (PK)        |                   | emprestimo_id (PK)   |                   | usuario_id (PK)      |
+| titulo_livro         |                   | livro_id (FK)        |                   | usuario_nome         |
+| isbn                 |                   | usuario_id (FK)      |                   | usuario_email        |
+| autor                |                   | data_emprestimo      |                   
+                                           | data_devolucao       |
+  
+
+🔴 Desafio Clínica
+
+5. Estrutura flat
+--Tarefa 1:
+|------------------------------------------------------|-------------------|--------------------------------------------------------------|
+| Violação                                             | Forma Normal      | Campo(s)                                                     |
+|------------------------------------------------------|-------------------|--------------------------------------------------------------|
+| Atributo multivalorado                               | 1FN               | procedimentos (lista: "Raio-X, Eletro...")                   |
+| Dependência parcial: dados do paciente não dependem  | 2FN               | paciente_nome, paciente_cpf, plano_saude,                    |
+| da consulta                                          |                   | plano_cobertura                                              |
+| Dependência parcial: dados do médico não dependem    | 2FN               | medico_nome, medico_crm, especialidade                       |
+| da consulta                                          |                   |                                                              |
+| Dependência parcial: dados da sala não dependem      | 2FN               | sala_numero, sala_andar                                      |
+| da consulta                                          |                   |                                                              |
+| Dependência transitiva: plano_cobertura depende      | 3FN               | plano_cobertura → plano_saude                                |
+| de plano_saude, não do paciente                      |                   |                                                              |
+| Dependência transitiva: especialidade depende        | 3FN               | especialidade → medico_crm                                   |
+| de medico_crm, não da consulta                       |                   |                                                              |
+| Dependência transitiva: sala_andar depende           | 3FN               | sala_andar → sala_numero                                     |
+| de sala_numero                                       |                   |                                                              |
+|------------------------------------------------------|-------------------|--------------------------------------------------------------|
+
+
+--Tarefa 2:
+
+|----------------------|        N:1        |----------------------|        N:1        |----------------------|
+|       Pacientes      |------------------>|      Consultas       |------------------>|       Medicos        |
+|----------------------|                   |----------------------|                   |----------------------|
+| paciente_id (PK)     |                   | consulta_id (PK)     |                   | medico_id (PK)       |
+| paciente_nome        |                   | paciente_id (FK)     |                   | medico_nome          |
+| paciente_cpf         |                   | medico_id (FK)       |                   | medico_crm           |
+| plano_id (FK)        |                   | sala_id (FK)         |                   | especialidade        |
+|----------------------|                   | data_consulta        |                   |----------------------|
+         |                                 | hora_consulta        |
+         | N:1                             |----------------------|----------
+         v                                            |
+|----------------------|                              | N:1
+|    Planos_Saude      |                              v
+|----------------------|                   |----------------------|
+| plano_id (PK)        |                   |        Salas         |
+| plano_nome           |                   |----------------------|
+| cobertura_pct        |                   | sala_id (PK)         |
+|----------------------|                   | sala_numero          |
+                                           | sala_andar           |
+                                           |----------------------|
+
+                                     1:N
+|------------------------------|<-----------------------------------|----------------------|
+|  Procedimentos_Consulta      |                                    |      Consultas       |
+|------------------------------|                                    |----------------------|
+| proc_id (PK)                 |                                    | consulta_id (PK)     |
+| consulta_id (FK)             |                                    |                      |
+| procedimento_nome            |                                    |                      |
+| custo                        |                                    |                      |
+|------------------------------|                                    |----------------------|
+
+--Tarefa 3:
+Reflexão: Mudança de cobertura → altera 1 linha em Plano_Saude. Vantagem: evita atualização em massa e preserva a integridade.

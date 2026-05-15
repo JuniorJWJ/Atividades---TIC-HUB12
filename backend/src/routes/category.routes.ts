@@ -1,32 +1,17 @@
 import { Router } from 'express'
-import {
-  createCategory,
-  deleteCategory,
-  getCategoryById,
-  listCategories,
-  updateCategory,
-} from '../controllers/category.controller.js'
-import { validateData } from '../middlewares/validateData.js'
-import {
-  categoryParamsSchema,
-  categoryQueryPaginationSchema,
-  createCategorySchema,
-  updateCategorySchema,
-} from '../schemas/category.schema.js'
+import type { CategoryController } from '../controllers/category.controller.js'
+import { authMiddleware } from '../middlewares/authMiddleware.js'
+import { authorize } from '../middlewares/authorize.js'
 
-export const categoryRouter = Router()
+export function createCategoryRouter(categoryController: CategoryController): Router {
+  const router = Router()
+  const adminOnly = [authMiddleware, authorize('admin')]
 
-categoryRouter.get('/', validateData(categoryQueryPaginationSchema, 'query'), listCategories)
+  router.get('/', categoryController.getAll)
+  router.get('/:id', categoryController.getById)
+  router.post('/', adminOnly, categoryController.create)
+  router.put('/:id', adminOnly, categoryController.update)
+  router.delete('/:id', adminOnly, categoryController.delete)
 
-categoryRouter.get('/:id', validateData(categoryParamsSchema, 'params'), getCategoryById)
-
-categoryRouter.post('/', validateData(createCategorySchema, 'body'), createCategory)
-
-categoryRouter.put(
-  '/:id',
-  validateData(categoryParamsSchema, 'params'),
-  validateData(updateCategorySchema, 'body'),
-  updateCategory,
-)
-
-categoryRouter.delete('/:id', validateData(categoryParamsSchema, 'params'), deleteCategory)
+  return router
+}

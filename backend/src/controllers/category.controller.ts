@@ -1,74 +1,87 @@
-import type { Request, Response } from 'express'
-import { categories } from '../data/categories.js'
-import type {
-  CategoryParams,
-  CategoryQueryPagination,
-  CreateCategoryBody,
-  UpdateCategoryBody,
+import type { NextFunction, Request, Response } from 'express'
+import {
+  CategoryListDto,
+  CategoryResponseDto,
+  CreateCategoryDto,
+  UpdateCategoryDto,
+} from '../dtos/category.dto.js'
+import { AppError } from '../errors/AppError.js'
+import {
+  categoryParamsSchema,
+  categoryQueryPaginationSchema,
+  createCategorySchema,
+  updateCategorySchema,
 } from '../schemas/category.schema.js'
-import type { Category } from '../types/category.js'
+import type { CategoryService } from '../services/CategoryService.js'
 
-type ErrorResponse = {
-  message: string
-}
+export class CategoryController {
+  constructor(private readonly categoryService: CategoryService) {}
 
-export function listCategories(_req: Request, res: Response<Category[]>): void {
-  const { page, size } = res.locals.query as CategoryQueryPagination
-  const start = (page - 1) * size
-  const end = start + size
+  getAll = (req: Request, res: Response, next: NextFunction): void => {
+    try {
+      const query = this.parse(categoryQueryPaginationSchema, req.query)
+      const categories = this.categoryService.getAll(query.page, query.size)
 
-  res.status(200).json(categories.slice(start, end))
-}
-
-export function getCategoryById(_req: Request, res: Response<Category | ErrorResponse>): void {
-  const { id } = res.locals.params as CategoryParams
-  const category = categories.find((item) => item.id === id)
-
-  if (!category) {
-    res.status(404).json({ message: 'Categoria não encontrada.' })
-    return
+      res.status(200).json(CategoryListDto.create(categories, query.page, query.size))
+    } catch (error) {
+      next(error)
+    }
   }
 
-  res.status(200).json(category)
-}
+  getById = (req: Request, res: Response, next: NextFunction): void => {
+    try {
+      const { id } = this.parse(categoryParamsSchema, req.params)
+      const category = this.categoryService.getById(id)
 
-export function createCategory(_req: Request, res: Response<Category>): void {
-  const body = res.locals.body as CreateCategoryBody
-  const category: Category = {
-    id: crypto.randomUUID(),
-    ...body,
+      res.status(200).json(CategoryResponseDto.create(category))
+    } catch (error) {
+      next(error)
+    }
   }
 
-  categories.push(category)
-  res.status(201).json(category)
-}
+  create = (req: Request, res: Response, next: NextFunction): void => {
+    try {
+      const body = this.parse(createCategorySchema, req.body)
+      const dto = CreateCategoryDto.create(body)
+      const category = this.categoryService.create(dto.name)
 
-export function updateCategory(_req: Request, res: Response<Category | ErrorResponse>): void {
-  const { id } = res.locals.params as CategoryParams
-  const body = res.locals.body as UpdateCategoryBody
-  const categoryIndex = categories.findIndex((item) => item.id === id)
-
-  if (categoryIndex < 0) {
-    res.status(404).json({ message: 'Categoria não encontrada.' })
-    return
+      res.status(201).json(CategoryResponseDto.create(category))
+    } catch (error) {
+      next(error)
+    }
   }
 
-  const updatedCategory = {
-    ...categories[categoryIndex],
-    ...body,
+  update = (req: Request, res: Response, next: NextFunction): void => {
+    try {
+      const { id } = this.parse(categoryParamsSchema, req.params)
+      const body = this.parse(updateCategorySchema, req.body)
+      const dto = UpdateCategoryDto.create(body)
+      const category = this.categoryService.update(id, dto.name)
+
+      res.status(200).json(CategoryResponseDto.create(category))
+    } catch (error) {
+      next(error)
+    }
   }
 
-  categories[categoryIndex] = updatedCategory
-  res.status(200).json(updatedCategory)
-}
+  delete = (req: Request, res: Response, next: NextFunction): void => {
+    try {
+      const { id } = this.parse(categoryParamsSchema, req.params)
 
-export function deleteCategory(_req: Request, res: Response): void {
-  const { id } = res.locals.params as CategoryParams
-  const categoryIndex = categories.findIndex((item) => item.id === id)
-
-  if (categoryIndex >= 0) {
-    categories.splice(categoryIndex, 1)
+      this.categoryService.delete(id)
+      res.status(204).send()
+    } catch (error) {
+      next(error)
+    }
   }
 
-  res.status(204).send()
+  private parse<T>(schema: { safeParse: (data: unknown) => { success: true; data: T } | { success: false; error: { issues: { message: string }[] } } }, data: unknown): T {
+    const result = schema.safeParse(data)
+
+    if (!result.success) {
+      throw new AppError(result.error.issues.map((issue) => issue.message).join(' | '), 400)
+    }
+
+    return result.data
+  }
 }
